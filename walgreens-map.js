@@ -1,8 +1,11 @@
+const info = require('./vaxbot_info.js')
+const username= info.logins.walgreens.username
+const password = info.logins.walgreens.password
 
-{
+let walgreens = {
 	url: "https://www.walgreens.com",
-	username: "vaxbotSTL@gmail.com",
-	password : "ALp9a26xHe",
+	username: username,
+	password : password,
 	
 	pages: [
 		{
@@ -42,14 +45,16 @@
 						name: "location",
 						type: "input",
 						id: "inputLocation",
-						value: location,
+						value: info.location,
 					},
 				],
 				submit: {
 					// NO ID on button element! Need to test other selectors
 					type: "button",
-					id: "",
+					id: null,
 					value: null,
+					nearest_ancestor_id: "wag-body-main-container",
+					classes: ["btn"],
 				},
 			},
 		},
@@ -63,7 +68,7 @@
 					{
 						name: "survey",
 						type: "radio",
-						id: "sq_101i_1", // 65yrs or older
+						id: "sq_100i_3", // I have a high risk medical condition
 						value: null,
 					},
 					{
@@ -76,8 +81,10 @@
 				submit: {
 					// NO ID on button element! Need to test other selectors
 					type: "button",
-					id: "",
+					id: null,
 					value: null,
+					nearest_ancestor_id: "sp_102",
+					classes: ["sv_complete_btn"],
 				},
 			},
 		},
@@ -116,8 +123,10 @@
 				submit: {
 					// NO ID on button element! Need to test other selectors
 					type: "button",
-					id: "",
+					id: null,
 					value: null,
+					nearest_ancestor_id: "sp_100",
+					classes: ["sv_complete_btn"]
 				},
 			},
 		},
@@ -134,7 +143,7 @@
 		},
 		
 		{
-			name: "patient-info",
+			name: "patient info",
 			url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/patient-info",
 			next: false,
 			form: {
@@ -143,7 +152,7 @@
 						name: "race",
 						type:"select",
 						id: "race-dropdown",
-						value: "2131-1", //other race, b/c we're a bot posing as a person
+						value: "2131-1", //other race
 					},
 					{
 						name: "ethnicity",
@@ -155,13 +164,13 @@
 						name: "email",
 						type: "input",
 						id: "field-email",
-						value: email,
+						value: info.email,
 					},
 					{
 						name: "phone",
 						type: "input",
 						id: "field-phone",
-						value: phone,
+						value: info.phone,
 					},
 					// what type of appointment are you looking for?
 					{
@@ -195,17 +204,21 @@
 						name: "location",
 						type: "input",
 						id: "search-address",
-						value: location,
+						value: info.location,
 					},
 				],
 				submit: {
-					// this one is a link and an SVG inside a span. No ID, and it's for searching a provided location. Needs Work.
-					type: "",
-					id: "",
+					// this one appears to auto-search with previously provided location. may not need to use submit
+					type: "link",
+					id: null,
 					value: null,
+					nearest_ancestor_id: "wag-body-main-container",
+					classes: ["storeSearch"],
 				},
 			},
 			
 		},
 	],
 }
+
+module.exports = walgreens

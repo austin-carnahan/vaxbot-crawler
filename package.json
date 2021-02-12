@@ -1,0 +1,19 @@
+{
+  "name": "vaxbot",
+  "version": "1.0.0",
+  "description": "VaxBot is inspired by the work of Huge Ma and their work on TurboVax for NYC @ https://www.turbovax.info",
+  "main": "walgreens.js",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.5",
+    "node-fetch": "^2.6.1",
+    "puppeteer": "^7.0.4",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
