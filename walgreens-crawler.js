@@ -26,12 +26,21 @@ let url = walgreens.pages[0].url;
 	//~ await browser.close();
 
 	await page.goto(url);
-
 	await page.type('#' + walgreens.pages[0].form.elements[0].id, walgreens.pages[0].form.elements[0].value);
 	await page.type('#' + walgreens.pages[0].form.elements[1].id, walgreens.pages[0].form.elements[1].value);
-	await page.keyboard.press('Enter');
-	await page.waitForNavigation();
-	//~ await page.screenshot({ path: 'example2.png' });
+	
+	// puppeteer docs suggest this combined promise syntax to avoid race conditions when clicks cause navigation
+	const [response] = await Promise.all([
+	  page.waitForNavigation(),
+	  page.click('#' + walgreens.pages[0].form.submit.id)
+	]);
+	
+	await page.goto(walgreens.pages[1].url)
+	
+	//~ await page.keyboard.press('Enter');
+	//~ await page.waitForNavigation();
+	
+	//await page.screenshot({ path: 'example2.png' });
 	console.log('New Page URL:', page.url());
 	await browser.close();
 })();
