@@ -1,0 +1,11 @@
+{
+	first_name : "Vax",
+	last_name : "Botstl",
+	email : "vaxbotSTL@gmail.com",
+	street : "2163 S Grand Ave", // jack in the box on grand
+	city : "Saint Louis",
+	state : "MO",
+	zip : "63104",
+	location : "Saint Louis, MO, USA",
+	phone : "314-827-5574", // voice.google.com number
+}

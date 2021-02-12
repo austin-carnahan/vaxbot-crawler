@@ -1,0 +1,211 @@
+
+{
+	url: "https://www.walgreens.com",
+	username: "vaxbotSTL@gmail.com",
+	password : "ALp9a26xHe",
+	
+	pages: [
+		{
+			name: "login",
+			url: "https://www.walgreens.com/login.jsp",
+			next: false,
+			form: {
+				elements: [
+					{
+						name: "username",
+						type: "input",
+						id: "user_name",
+						value: username,
+					},
+					{
+						name: "password",
+						type: "input",
+						id: "user_password",
+						value: password,
+					},
+				],
+				submit:	{
+					type: "button",
+					id: "submit_btn",
+					value: null,
+				},
+			},
+		},
+	
+		{
+			name: "location screening",
+			url: "https://www.walgreens.com/findcare/vaccination/covid-19/location-screening",
+			next: false,
+			form: {
+				elements: [
+					{
+						name: "location",
+						type: "input",
+						id: "inputLocation",
+						value: location,
+					},
+				],
+				submit: {
+					// NO ID on button element! Need to test other selectors
+					type: "button",
+					id: "",
+					value: null,
+				},
+			},
+		},
+	
+		{
+			name: "eligibility survey",
+			url: "https://www.walgreens.com/findcare/vaccination/covid-19/eligibility-survey",
+			next: false,
+			form: {
+				elements: [
+					{
+						name: "survey",
+						type: "radio",
+						id: "sq_101i_1", // 65yrs or older
+						value: null,
+					},
+					{
+						name: "confirm",
+						type: "checkbox",
+						id: "eligibility-check",
+						value: null,
+					},
+				],
+				submit: {
+					// NO ID on button element! Need to test other selectors
+					type: "button",
+					id: "",
+					value: null,
+				},
+			},
+		},
+		
+		{
+			name: "screening questions",
+			url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/screening",
+			next: false,
+			form: {
+				elements: [
+					{
+						name: "state_auth",
+						type: "radio",
+						id: "sq_100i_1", //No
+						value: null,
+					},
+					{
+						name: "symptoms",
+						type: "radio",
+						id: "sq_102i_1", //No
+						value: null,
+					},
+					{
+						name: "have_covid",
+						type: "radio",
+						id: "sq_103i_1", //No
+						value: null,
+					},
+					{
+						name: "chronic_health",
+						type: "radio",
+						id: "sq_104i_0", //Yes
+						value: null,
+					},
+				],
+				submit: {
+					// NO ID on button element! Need to test other selectors
+					type: "button",
+					id: "",
+					value: null,
+				},
+			},
+		},
+		
+		{
+			name:"results eligible",
+			url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/screening/results-eligible/",
+			next: {
+				type: "link",
+				id: "hn-startVisitBlock-gb-terms",
+				value: null,
+			},
+			form: null,
+		},
+		
+		{
+			name: "patient-info",
+			url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/patient-info",
+			next: false,
+			form: {
+				elements: [
+					{
+						name: "race",
+						type:"select",
+						id: "race-dropdown",
+						value: "2131-1", //other race, b/c we're a bot posing as a person
+					},
+					{
+						name: "ethnicity",
+						type: "select",
+						id: "ethnicity-dropdown",
+						value: "UNK", //unknown ethnicity
+					},
+					{
+						name: "email",
+						type: "input",
+						id: "field-email",
+						value: email,
+					},
+					{
+						name: "phone",
+						type: "input",
+						id: "field-phone",
+						value: phone,
+					},
+					// what type of appointment are you looking for?
+					{
+						name: "dose1",
+						type: "radio",
+						id: "dose1",
+						value: null,
+					},
+					{
+						name: "dose2",
+						type: "radio",
+						id: "dose2",
+						value: null,
+					},
+				],
+				submit: {
+					type: "button",
+					id: "continueBtn",
+					value: null,
+				},
+			},
+		},
+		
+		{
+			name: "appointment search",
+			url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/next-available",
+			next: false,
+			form: {
+				elements: [
+					{
+						name: "location",
+						type: "input",
+						id: "search-address",
+						value: location,
+					},
+				],
+				submit: {
+					// this one is a link and an SVG inside a span. No ID, and it's for searching a provided location. Needs Work.
+					type: "",
+					id: "",
+					value: null,
+				},
+			},
+			
+		},
+	],
+}
