@@ -44,12 +44,12 @@ function buildSelector(element) {
 	
 	
 	await page.goto(departure_url);
-	let count = 0;
+	let view_url = departure_url;
 	
-	while (count < 7) {
+	while (view_url != terminus_url) {
 		
 		// Make sure we have a map for the page we are on
-		let view_url = stripURL(page.url());
+		view_url = stripURL(page.url());
 		let view = {};
 		
 		if(walgreens.page_map[view_url]){
@@ -92,23 +92,24 @@ function buildSelector(element) {
 		}
 		
 		// Navigate to the next page
-		const selector = buildSelector(view.next);	
-		if (selector) {
-			// puppeteer docs suggest this combined promise syntax to avoid race conditions when clicks trigger navigation
-			await page.waitForSelector(selector);
-			const [response] = await Promise.all([
-				page.click(selector),
-				page.waitForNavigation()
-			]);
+		if (view.next){
+			const selector = buildSelector(view.next);	
+			if (selector) {
+				// puppeteer docs suggest this combined promise syntax to avoid race conditions when clicks trigger navigation
+				await page.waitForSelector(selector);
+				const [response] = await Promise.all([
+					page.click(selector),
+					page.waitForNavigation()
+				]);
+				
+			} else if (view.next.url) {
+				await page.goto(view.next.url);
 			
-		} else if (view.next.url) {
-			await page.goto(view.next.url);
-		
-		} else {
-			console.log("ERROR: Nowhere to go")
+			} else {
+				console.log("ERROR: Nowhere to go")
+			}
 		}
 		
-		count += 1;
 	}
 })();
 

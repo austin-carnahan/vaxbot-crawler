@@ -210,13 +210,13 @@ let walgreens = {
 					id: "dose1",
 					value: null,
 				},
-				{
-					name: "dose2",
-					element: "input",
-					type: "radio",
-					id: "dose2",
-					value: null,
-				},
+				//~ {
+					//~ name: "dose2",
+					//~ element: "input",
+					//~ type: "radio",
+					//~ id: "dose2",
+					//~ value: null,
+				//~ },
 			],
 			next: {
 				element: "button",
@@ -227,23 +227,26 @@ let walgreens = {
 	
 		"https://www.walgreens.com/findcare/vaccination/covid-19/appointment/next-available" : {
 			name: "appointment search",
-			form: [
-				{
-					name: "location",
-					element: "input",
-					type: "text",
-					id: "search-address",
-					value: info.location,
-				},
-			],
-			next: {
-				// this one appears to auto-search with previously provided location. may not need to use submit
-				element: "a",
-				id: null,
-				value: null,
-				nearest_ancestor_id: "wag-body-main-container",
-				classes: ["storeSearch"],
-			},	
+			form: null,
+			//~ form: [
+				//~ {
+					//~ name: "location",
+					//~ element: "input",
+					//~ type: "text",
+					//~ id: "search-address",
+					//~ value: info.location,
+				//~ },
+				//~ {
+					//~ // this one appears to auto-search with previously provided location. may not need to use submit. the click doesnt seem to work...
+					//~ name: "search",
+					//~ element: "a",
+					//~ id: null,
+					//~ value: null,
+					//~ nearest_ancestor_id: "wag-body-main-container",
+					//~ classes: ["storeSearch"],
+				//~ },
+			//~ ],
+			next: null,	
 		},
 	},
 }
