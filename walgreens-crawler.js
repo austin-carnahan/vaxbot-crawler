@@ -14,6 +14,13 @@ function stripURL(url_string){
 	return result.origin + result.pathname.replace(/\/$/, '');	
 }
 
+function buildSelector(element) {
+	let selector = "";
+	if(element.id) {
+		selector = `${element.element}[id=${element.id}]`;
+	return selector;
+}
+
 
 (async () => {
 	
@@ -38,7 +45,7 @@ function stripURL(url_string){
 	if(walgreens.page_map[view_url]){
 		let view = walgreens.page_map[view_url];
 	} else {
-		console.log("ERROR: view URL not in map. You may have been redirected.");
+		console.log(`ERROR: view URL: ${view_url} not found in map. You may have been redirected.`);
 		await page.screenshot({ path: 'screenshots/URL_not_in_map.png' });
 		await browser.close();
 		process.exit()
@@ -47,7 +54,8 @@ function stripURL(url_string){
 	// Fill out the form
 	for(let i=0; i< view.form.length; i++){
 		
-		const selector = view.form[i].element + "[id=" + view.form[i].id + "]";
+		const selector = buildSelector(view.form[i]);
+		//~ const selector = view.form[i].element + "[id=" + view.form[i].id + "]";
 		const data = view.form[i].value;
 		
 		// this gives our bot a lil more human touch
@@ -63,7 +71,8 @@ function stripURL(url_string){
 	}
 	
 	// Navigate to the next page
-	let selector = view.next.element + "[id=" + view.next.id + "]";
+	const selector = buildSelector(view.next);
+	//~ let selector = view.next.element + "[id=" + view.next.id + "]";
 	
 	// puppeteer docs suggest this combined promise syntax to avoid race conditions when clicks trigger navigation
 	const [response] = await Promise.all([
