@@ -16,13 +16,15 @@ let walgreens = {
 				elements: [
 					{
 						name: "username",
-						type: "input",
+						element: "input",
+						type: "text",
 						id: "user_name",
 						value: username,
 					},
 					{
 						name: "password",
-						type: "input",
+						element: "input",
+						type: "text",
 						id: "user_password",
 						value: password,
 					},
@@ -34,6 +36,39 @@ let walgreens = {
 				},
 			},
 		},
+		
+		{
+			name: "2fa verification",
+			url: "https://www.walgreens.com/profile/verify_identity.jsp",
+			terminus: false,
+			form: [
+				{
+					name: "security question",
+					element: "input",
+					type: "radio",
+					id: "radio-security",
+					value: null,
+				},
+			],
+			next: {
+				element: "button",
+				type: null,
+				id: "optionContinue",
+			}				
+		},
+		
+		{
+			name: "homepage",
+			url: "https://www.walgreens.com/youraccount/default.jsp"
+			terminus: false,
+			form: null,
+			next: {
+				element: null,
+				type: null,
+				id: null,
+				url: "https://www.walgreens.com/findcare/vaccination/covid-19/location-screening",
+			},
+		},
 	
 		{
 			name: "location screening",
@@ -43,7 +78,8 @@ let walgreens = {
 				elements: [
 					{
 						name: "location",
-						type: "input",
+						element: "input",
+						type: "text",
 						id: "inputLocation",
 						value: info.location,
 					},
@@ -67,12 +103,14 @@ let walgreens = {
 				elements: [
 					{
 						name: "survey",
+						element: "input",
 						type: "radio",
 						id: "sq_100i_3", // I have a high risk medical condition
 						value: null,
 					},
 					{
 						name: "confirm",
+						element: "input",
 						type: "checkbox",
 						id: "eligibility-check",
 						value: null,
@@ -80,6 +118,7 @@ let walgreens = {
 				],
 				submit: {
 					// NO ID on button element! Need to test other selectors
+					element: "input",
 					type: "button",
 					id: null,
 					value: null,
@@ -97,24 +136,28 @@ let walgreens = {
 				elements: [
 					{
 						name: "state_auth",
+						element: "input",
 						type: "radio",
 						id: "sq_100i_1", //No
 						value: null,
 					},
 					{
 						name: "symptoms",
+						element: "input",
 						type: "radio",
 						id: "sq_102i_1", //No
 						value: null,
 					},
 					{
 						name: "have_covid",
+						element: "input",
 						type: "radio",
 						id: "sq_103i_1", //No
 						value: null,
 					},
 					{
 						name: "chronic_health",
+						element: "input",
 						type: "radio",
 						id: "sq_104i_0", //Yes
 						value: null,
@@ -122,6 +165,7 @@ let walgreens = {
 				],
 				submit: {
 					// NO ID on button element! Need to test other selectors
+					element: "input",
 					type: "button",
 					id: null,
 					value: null,
@@ -135,7 +179,7 @@ let walgreens = {
 			name:"results eligible",
 			url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/screening/results-eligible/",
 			next: {
-				type: "link",
+				element: "a",
 				id: "hn-startVisitBlock-gb-terms",
 				value: null,
 			},
@@ -150,44 +194,48 @@ let walgreens = {
 				elements: [
 					{
 						name: "race",
-						type:"select",
+						element:"select",
 						id: "race-dropdown",
 						value: "2131-1", //other race
 					},
 					{
 						name: "ethnicity",
-						type: "select",
+						element: "select",
 						id: "ethnicity-dropdown",
 						value: "UNK", //unknown ethnicity
 					},
 					{
 						name: "email",
-						type: "input",
+						element: "input",
+						type: "text",
 						id: "field-email",
 						value: info.email,
 					},
 					{
 						name: "phone",
-						type: "input",
+						element: "input",
+						type: "text",
 						id: "field-phone",
 						value: info.phone,
 					},
 					// what type of appointment are you looking for?
 					{
 						name: "dose1",
+						element: "input",
 						type: "radio",
 						id: "dose1",
 						value: null,
 					},
 					{
 						name: "dose2",
+						element: "input",
 						type: "radio",
 						id: "dose2",
 						value: null,
 					},
 				],
 				submit: {
-					type: "button",
+					element: "button",
 					id: "continueBtn",
 					value: null,
 				},
@@ -202,14 +250,15 @@ let walgreens = {
 				elements: [
 					{
 						name: "location",
-						type: "input",
+						element: "input",
+						type: "text",
 						id: "search-address",
 						value: info.location,
 					},
 				],
 				submit: {
 					// this one appears to auto-search with previously provided location. may not need to use submit
-					type: "link",
+					element: "a",
 					id: null,
 					value: null,
 					nearest_ancestor_id: "wag-body-main-container",
