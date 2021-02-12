@@ -41,7 +41,7 @@ let walgreens = {
 		},
 	
 		"https://www.walgreens.com/profile/verify_identity.jsp" : {
-			name: "2fa verification",
+			name: "security redirect",
 			form: [
 				{
 					name: "security question",
@@ -82,7 +82,8 @@ let walgreens = {
 			],
 			next: {
 				// NO ID on button element! Need to test other selectors
-				type: "button",
+				element: "button",
+				type: null,
 				id: null,
 				value: null,
 				nearest_ancestor_id: "wag-body-main-container",
@@ -114,7 +115,7 @@ let walgreens = {
 				type: "button",
 				id: null,
 				value: null,
-				nearest_ancestor_id: "sp_102",
+				nearest_ancestor_id: "sp_100",
 				classes: ["sv_complete_btn"],
 			},
 		},
