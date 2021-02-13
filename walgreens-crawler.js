@@ -1,6 +1,3 @@
-//ummm this is new. Hello World.
-const request = require('request-promise');
-const $ = require('cheerio');
 const puppeteer = require('puppeteer');
 const url = require('url');
 const walgreens = require("./walgreens-map2.js");
