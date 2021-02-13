@@ -1,4 +1,4 @@
-#Hello World!
+# Hello World!
 
 VaxBot is inspired by the work of Huge Ma and their work on TurboVax for NYC @ https://www.turbovax.info
 
@@ -12,11 +12,11 @@ expedite the process of frequently checking multiple pharmacy websites, and by f
 potential appointments regardless of state or city specific resources. With these built-in, and with an open source codebase, other developers can
 focus on customizing VaxBot to include additional regional resources.
 
-##How it Works
+## How it Works
 
 VaxBot is designed with a map and crawler approach. The map takes the form of a javascript object and contains:
-- a set of designated departure and terminus urls for the crawler
-- a list of html elements that need to be manipulated on a given page or provided specified values
-- a list of html elements to select when ready to proceed with navigation.
+* a set of designated departure and terminus urls for the crawler
+* a list of html elements that need to be manipulated on a given page or provided specified values
+* a list of html elements to select when ready to proceed with navigation.
 
 The crawler follows the map et voila!
