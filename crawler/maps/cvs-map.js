@@ -10,7 +10,7 @@ let map = {
 	//~ password : password,
 
 	//pharmacy/clinical-services/immunization/scheduled?imzType=covid
-	page_map: {
+	pages: {
 		"https://www.walmart.com/account/login": [
 			{
 				element: "input",

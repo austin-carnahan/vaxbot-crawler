@@ -1,12 +1,11 @@
 const puppeteer = require('puppeteer');
 const url = require('url');
-const map = require("./walmart-map.js");
+const map = require("./maps/walmart-map.js");
 
 console.log(map.start_url);
 
-let departure_url = map.start_url;
-let terminus_url = map.target_url;
- console.log(departure_url);
+let start_url = map.start_url;
+let target_url = map.target_url;
 
 function stripURL(url_string){
 	// remove query parameters and trailing '/'
@@ -43,10 +42,10 @@ function buildSelector(element) {
 	await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
 	
 	// Start
-	await page.goto(departure_url);
-	let view_url = departure_url;
+	await page.goto(start_url);
+	let view_url = start_url;
 	
-	while (view_url != terminus_url) {
+	while (view_url != target_url) {
 		
 		view_url = stripURL(page.url());
 		let elements = [];
@@ -54,7 +53,7 @@ function buildSelector(element) {
 		
 		try{
 			console.log("start try block");
-			elements = map.page_map[view_url];
+			elements = map.pages[view_url];
 			console.log(elements);
 		} catch (error){
 			console.log(`ERROR: view URL: ${view_url} not found in map. You may have been redirected. \n ${error}`);
@@ -76,17 +75,14 @@ function buildSelector(element) {
 					page.waitForNavigation()
 				]);
 				break;
-			}
-			
+			}c
 			
 			/*
-			* if this is a text input or a select element, nothing happens here,
-			* but clicking them before manipulating gives a lil more human feel.
+			* if this is a text input or a select element, nothing happens with the first click,
+			* but clicking before manipulating gives a lil more human feel.
 			* page.click() works poorly on radio buttons, docs here:
 			* https://github.com/puppeteer/puppeteer/issues/3347
-			*/
-			
-							
+			*/						
 			await page.$eval(selector, item => item.click());
 			
 			if(elements[i].type == "text") {
@@ -98,27 +94,6 @@ function buildSelector(element) {
 				await page.$eval(selector, (item, value) => item.value = value, data);
 			}	
 		}
-
-		
-		// Navigate to the next page
-		//~ if (view.next){
-			//~ const selector = buildSelector(view.next);	
-			//~ if (selector) {
-				//~ // puppeteer docs suggest this combined promise syntax to avoid race conditions when clicks trigger navigation
-				//~ await page.waitForSelector(selector);
-				//~ const [response] = await Promise.all([
-					//~ page.click(selector),
-					//~ page.waitForNavigation()
-				//~ ]);
-				
-			//~ } else if (view.next.url) {
-				//~ await page.goto(view.next.url);
-			
-			//~ } else {
-				//~ console.log("ERROR: Nowhere to go")
-			//~ }
-		//~ }
-		
 	}
 })();
 

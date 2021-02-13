@@ -8,7 +8,7 @@ let map = {
 	username: username,
 	password : password,
 
-	page_map: {
+	pages: {
 		"https://www.walgreens.com/login.jsp": [
 			{
 				element: "input",
