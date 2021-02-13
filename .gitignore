@@ -1,3 +1,5 @@
-vaxbot_info.js
-node_modules
-screenshots
+crawler/vaxbot_info.js
+crawler/node_modules
+crawler/screenshots
+twitter_bot/.env
+twitter_bot/venv

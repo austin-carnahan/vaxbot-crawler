@@ -39,7 +39,7 @@ function buildSelector(element) {
 	await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36');
 	await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
 	
-	
+	// Start
 	await page.goto(departure_url);
 	let view_url = departure_url;
 	
@@ -77,9 +77,9 @@ function buildSelector(element) {
 				await page.$eval(selector, elem => elem.click());
 				
 				if(view.form[i].type == "text") {
-					//clear pre-filled text
-					// if an option, typing helps keep us undetected and unblocked
-					//can maybe do this better by triple clicking and hitting backspace
+					// clear pre-filled text
+					// if it's an option, typing helps keep us undetected and unblocked
+					// can maybe do this better by triple clicking and hitting backspace
 					await page.$eval(selector, (elem) => elem.value = "");
 					await page.type(selector, data); 
 				} else if (view.form[i].type == "select"){
