@@ -1,5 +1,5 @@
 **/vaxbot_info.js
+**/.env
 crawler/node_modules
 crawler/screenshots
-twitter_bot/.env
 twitter_bot/venv
