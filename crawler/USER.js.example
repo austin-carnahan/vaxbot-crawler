@@ -1,0 +1,25 @@
+const USER = {
+	personal: {
+		FIRST_NAME : "YOUR_INFO_HERE",
+		LAST_NAME : "YOUR_INFO_HERE",
+		EMAIL : "YOUR_INFO_HERE",
+		STREET : "YOUR_INFO_HERE",
+		CITY : "YOUR_INFO_HERE",
+		STATE : "YOUR_INFO_HERE",
+		ZIP : "YOUR_INFO_HERE",
+		PHONE : "YOUR_INFO_HERE",
+	},
+	logins: {
+		walgreens: {
+			USERNAME: "vYOUR_INFO_HERE",
+			PASSWORD: "YOUR_INFO_HERE",
+			SECURITY_ANSWER: "YOUR_INFO_HERE",
+		},
+		walmart: {
+			USERNAME: "YOUR_INFO_HERE",
+			PASSWORD: "YOUR_INFO_HERE",
+		},
+	},
+}
+
+module.exports = USER

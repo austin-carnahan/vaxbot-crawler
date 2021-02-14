@@ -1,14 +1,8 @@
-const info = require('./vaxbot_info.js')
-const username= info.logins.walmart.username
-const password = info.logins.walmart.password
-
 let map = {
+	name: "walmart",
 	base_url: "https://www.walmart.com/",
 	start_url: "https://www.walmart.com/pharmacy/clinical-services/immunization/scheduled?imzType=covid",
 	target_url: "",
-	username: username,
-	password : password,
-
 	//pharmacy/clinical-services/immunization/scheduled?imzType=covid
 	pages: {
 		"https://www.walmart.com/account/login": [
@@ -16,13 +10,13 @@ let map = {
 				element: "input",
 				type: "text",
 				id: "email",
-				value: username,
+				value: "{USERNAME}",
 			},
 			{
 				element: "input",
 				type: "text",
 				id: "password",
-				value: password,
+				value: "{PASSWORD}",
 			},
 			{
 				element: "button",
