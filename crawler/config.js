@@ -5,29 +5,38 @@ const walgreens = require("./maps/walgreens.js");
 const walmart = require("./maps/walmart.js");
 
 
-// register as crawler targets
+// register crawler targets
 const TARGETS = [
-	walgreens,
-	//walmart,
+	//walgreens,
+	walmart,
 ]
 
 
-// insert site credentials and user info into maps
+// insert site credentials and user info into target maps
 TARGETS.forEach(function(map, index) {
-	let data = JSON.stringify(map);
-	for(let item in user.personal) {
-		let placeholder = "{" + item + "}";
-		let replacer = new RegExp(placeholder, 'g');
-		data = data.replace(replacer, user.personal[item]);
-	};
-	for(let item in user.logins[map.name]){
-		let placeholder = "{" + item + "}";
-		let replacer = new RegExp(placeholder, 'g');
-		data = data.replace(replacer, user.logins[map.name][item]);
+	try {
+		let data = JSON.stringify(map);
+		for(let item in user.personal) {
+			let placeholder = "{" + item + "}";
+			let replacer = new RegExp(placeholder, 'g');
+			data = data.replace(replacer, user.personal[item]);
+		};
+		if (user.logins[map.name]) {
+			for(let item in user.logins[map.name]){
+				let placeholder = "{" + item + "}";
+				let replacer = new RegExp(placeholder, 'g');
+				data = data.replace(replacer, user.logins[map.name][item]);
+			}
+		}
+		TARGETS[index] = JSON.parse(data);
+	} catch (err) {
+		console.error(`ERROR: failed to parse target map: ${TARGETS[index].name}. Removing map from TARGETS.\n ${err}`);
+		TARGETS.splice(index, 1);
+		return;
 	}
-	TARGETS[index] = JSON.parse(data);
 })
 
+console.log(`The following target maps were successfully prepared: ${TARGETS}`);
 //~ console.log(TARGETS[0].pages['https://www.walgreens.com/login.jsp']);
 
 

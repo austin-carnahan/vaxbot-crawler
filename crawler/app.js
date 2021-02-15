@@ -1,7 +1,13 @@
 const config = require("./config.js");
 const Crawler = require("./modules/crawler.js");
-const walgreens_map = require("./maps/walgreens-map.js");
 
-let spider = new Crawler(walgreens_map);
 
-spider.crawl();
+for(let i=0; i< config.length; i++) {
+	try {
+		let spider = new Crawler(config[i]);
+		spider.crawl();
+	} catch (err) {
+		console.error(`ERROR: crawler for ${config[i].name} has failed. \n ${err}`);
+		continue;
+	}	
+}
