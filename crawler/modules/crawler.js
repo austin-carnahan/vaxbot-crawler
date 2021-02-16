@@ -7,7 +7,7 @@ function stripURL(url_string){
 	return result.origin + result.pathname.replace(/\/$/, '');	
 }
 
-function buildSelector(element, children = false) {
+function buildSelector(element, descendants = false) {
 	let selector = null;
 
 	if(element.id && element.element) {
@@ -23,8 +23,8 @@ function buildSelector(element, children = false) {
 		throw new Error(`Not enough information to build selector.`);
 	}
 
-	if(children){
-		selector += ` > ${element.child_element}`;
+	if(descendants){
+		selector += ` ${element.descendant}${element.d_type ? `[type=${element.d_type}]` : ``}`;
 	}
 		
 	console.log(`generated element selector: ${selector}`);
@@ -37,10 +37,12 @@ class Crawler {
 		this.start_url = map.start_url;
 		this.target_url = map.target_url;
 		this.Target = Target;
+		this.targets = [];
+		this.forking = false;
 		this.crawl = this.crawl.bind(this); //bind context for recursive crawler calls
 	}
 	
-	async crawl(sub_crawl=false, current_page=null, current_url=null, elements_list=null, existing_target=null) {
+	async crawl(fork_count=null, existing_target=null, sub_crawl=false, current_page=null, current_url=null, elements_list=null) {
 		// great info on how to keep headless chrome from being blocked:
 		// https://jsoverson.medium.com/how-to-bypass-access-denied-pages-with-headless-chrome-87ddd5f3413c
 		// STATUS: still being blocked by walgreens
@@ -51,6 +53,7 @@ class Crawler {
 		let view_url;
 		let target;
 		let elements;
+		console.log(fork_count);
 		
 		try {
 			
@@ -78,14 +81,15 @@ class Crawler {
 				console.log("starting sub crawl...")
 				page = current_page;
 				view_url = current_url;
+				this.target_url = current_url;
 				elements = elements_list;
 				target = existing_target;
 			}
 				
 			do {
 				console.log(view_url);
-				console.log(elements);
-				console.log(target);
+				console.log(this.target_url);
+
 				if(!sub_crawl) {
 					view_url = stripURL(page.url());
 					console.log(`initializing page crawl on: ${view_url}`);
@@ -101,47 +105,68 @@ class Crawler {
 				console.log("searching for elements...")
 				for(let i=0; i< elements.length; i++){
 													
-					if(elements[i].for_each_child) {
+					if(elements[i].for_each) {
 						const selector = buildSelector(elements[i], true);
 						await page.waitForSelector(selector + ":nth-child(1)"); // one of the elements in the list
 						
 						//page.eval evaluates the given function in the BROWSER context!!! Not node
-						let elems_count = await page.$$eval(selector, elems => elems.length)
-						console.log(`iterating over ${elems_count} child elements...`);
+						let elems_count = await page.$$eval(selector, elems => elems.length);
 						
-						for(let j=0; j < elems_count; j++) {
+						// This whole thing seems dangerous and sloppy;
+						if(elements[i].fork){
+							this.forking = true;
+							if(!fork_count){
+								fork_count = 0;
+							}
 							
-							console.log(`evaluating browser logic for element ${j}...`);
+							console.log("FORKING! Count at: " + fork_count);
+							
+							if(fork_count < elems_count){
+								if(elements[i].target) {
+									console.log(`searching for target...in fork block`);
+									let data;
+									data = await page.$$eval(selector, (items, fork_count, process) =>
+										(process.method == "getAttribute") ? items[fork_count].getAttribute(process.value) : items[fork_count].textContext, fork_count, elements[i].process);
+									console.log(`target retrieved: ${data}`);
+									target[elements[i].target](data);
+								}
+								
+								console.log("clicking fork selection");
+								await page.$$eval(selector, (items, fork_count) =>
+									items[fork_count].click(), fork_count)
+									
+								fork_count += 1;
+								if(fork_count >= elems_count) {
+									this.forking = false;
+									fork_count = null;
+								}
+							}
+						}
+						
+						console.log(`iterating over ${elems_count} child elements...`);	
+						for(let j=0; j < elems_count; j++) {
 							
 							// browser context logic for element j						
 							
 							
-							if(elements[i].target) {
+							if(elements[i].target && !this.forking) {
+								console.log(`searching for target...`);
 								let data;
 								data = await page.$$eval(selector, (items, j, process) => 
 									(process.method == "getAttribute") ? items[j].getAttribute(process.value) : items[j].textContext, j, elements[i].process);							
 								console.log(`target retrieved: ${data}`);
 								target[elements[i].target](data);						
-							}
-							
-							await page.$$eval(selector, (items, j) => items[j].click(), j)
-							
-							//~ await page.$$eval(selector, function(items, j) {
-								//~ items.forEach(async function(item, index){
-									//~ if(index == j){
-										//~ item.click();
-									//~ }
-								//~ });
-							//~ }, j);
+							}		
 							
 							// node context logic for element j
-							console.log(` Evaluating nodejs logic for element ${j}...`);
+							
 							if(elements[i].subcrawl_elements) {
 								console.log("subcrawl elements found...");
-								target = await this.crawl(true, page, view_url, elements[i].subcrawl_elements, target);								
+								await page.$$eval(selector, (items, j) => items[j].click(), j);
+								// pause for visual inspection
+								await page.waitForTimeout(200);
+								target = await this.crawl(null, target, true, page, view_url, elements[i].subcrawl_elements);								
 							}
-							// pause for visual inspection
-							await page.waitForTimeout(200);
 						}		
 						continue;
 					}
@@ -153,9 +178,9 @@ class Crawler {
 					if(elements[i].target) {
 						try{
 							console.log("searching for target...")
-							await page.waitForSelector(selector, timeout=12000);
+							await page.waitForSelector(selector, { timeout : 9000 });
 						} catch (err) {
-							console.log("Failed to identify target. Skipping");
+							console.log("Failed to identify target. Skipping \n" + err);
 							continue;
 						}
 						
@@ -221,7 +246,21 @@ class Crawler {
 					}	
 				}
 			} while (view_url != this.target_url);
-			return target;
+			console.log("LEFT WHILE LOOP");
+			
+			if(sub_crawl){
+				return target;
+			} else if (this.forking) {
+				this.targets.push(target);
+				browser.close();
+				this.crawl(fork_count);
+			} else {
+				this.targets.push(target);
+				console.log(this.targets);
+				console.log("closing browser...");
+				browser.close();
+			} 
+			
 		} catch (err) {
 			console.error(err);
 			//~ await page.screenshot({ path: 'debug/screenshots/URL_not_in_map.png' });
