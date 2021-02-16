@@ -83,9 +83,7 @@ class Crawler {
 				
 				console.log("searching for elements...")
 				for(let i=0; i< elements.length; i++){
-					
-					
-					
+								
 					if(elements[i].for_each_child) {
 						const selector = buildSelector(elements[i], true);
 						await page.waitForSelector(selector + ":nth-child(1)");
@@ -109,6 +107,7 @@ class Crawler {
 							if(elements[i].subcrawl_elements) {
 								console.log("subcrawl elements found...");
 							}
+							// pause for visual inspection only
 							await page.waitForTimeout(1000);
 						}
 						
