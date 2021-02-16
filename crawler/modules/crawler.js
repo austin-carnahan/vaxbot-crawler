@@ -29,10 +29,6 @@ function buildSelector(element, children = false) {
 	return selector;
 }
 
-function testSomething(item) {
-	item.click()
-}
-
 class Crawler {
 	constructor(map) {
 		this.map = map;
@@ -43,7 +39,7 @@ class Crawler {
 	async crawl(newCrawl=true, current_page=null, current_url=null, custom_elements=null) {
 		// great info on how to keep headless chrome from being blocked:
 		// https://jsoverson.medium.com/how-to-bypass-access-denied-pages-with-headless-chrome-87ddd5f3413c
-		// STATUS: still being blocked
+		// STATUS: still being blocked by walgreens
 		
 		//let crawling = true;
 		let browser;
@@ -98,16 +94,22 @@ class Crawler {
 						let elems_count = await page.$$eval(selector, elems => elems.length)
 						console.log(`iterating over ${elems_count} child elements...`);
 						
-						for(let i=0; i < elems_count; i++) {
-							console.log(`evaluating element ${i}`);
-								await page.$$eval(selector, function(items, i) {
+						for(let j=0; j < elems_count; j++) {
+							console.log(`evaluating browser logic for element ${j}...`);
+								// browser context logic for element j
+								await page.$$eval(selector, function(items, j) {
 								items.forEach(async function(item, index){
-									if(index == i){
+									if(index == j){
 										item.click();
 									}
 								});
-							}, i);
-							// Clicks in browser context activated. Here we code node context logic
+							}, j);
+							// node context logic for element j
+							console.log(` Evaluating nodejs logic for element ${j}...`);
+							if(elements[i].subcrawl_elements) {
+								console.log("subcrawl elements found...");
+							}
+							await page.waitForTimeout(1000);
 						}
 						
 						continue;
@@ -139,7 +141,7 @@ class Crawler {
 					/*
 					* if this is a text input or a select element, nothing happens with the first click,
 					* but clicking before manipulating gives a lil more human feel.
-					* page.click() works poorly on radio buttons, docs here:
+					* page.click() works poorly on radio buttons, use $eval instead, docs here:
 					* https://github.com/puppeteer/puppeteer/issues/3347
 					*/						
 					await page.$eval(selector, item => item.click());
@@ -167,7 +169,7 @@ class Crawler {
 					}	
 				}
 			} while (view_url != this.target_url);
-			return 5;
+			console.log('5');
 		} catch (err) {
 			console.error(err);
 			//~ await page.screenshot({ path: 'debug/screenshots/URL_not_in_map.png' });
