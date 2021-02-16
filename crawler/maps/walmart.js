@@ -51,6 +51,22 @@ let map = {
 				classes: ["button--link"],
 			},
 			{
+				element: "div",
+				classes: ["store-address"],
+				nearest_ancestor_da_id_element: "label",
+				nearest_ancestor_da_id: "store-3061",
+				target:  "set_address",
+				process: {method: "textContent", value: ""},
+			},
+			{
+				element: "div",
+				classes: ["store-address"],
+				nearest_ancestor_da_id_element: "label",
+				nearest_ancestor_da_id: "store-3061",
+				target:  "set_name",
+				process: {method: "textContent", value: ""},
+			},
+			{
 				element: "input",
 				id: "radio-tile-3061",
 			},
@@ -83,14 +99,15 @@ let map = {
 				data_automation_id: "book-slot-slotDates",
 				classes: ["index__slot__dates___1d3-l"],
 				for_each_child : true,
+				target: "set_temp_date",
+				process: {method: "getAttribute", value: "aria-label"},
 				child_element : "button",
 				subcrawl: true,
 				subcrawl_elements : [
 					{
 						element: "div",
 						id: "appointment-available",
-						target: true,
-						stop: true,
+						target: "set_datetime",
 					}
 				],
 			},
@@ -98,4 +115,32 @@ let map = {
 	},
 }
 
-module.exports = map
+class Target {
+	constructor(source){
+		this.name;
+		this.source = source;
+		this.address ;
+		this.city;
+		this.datetimes = [];
+		this.temp_date;
+	}
+	
+	set_temp_date(str) {
+		this.temp_date = str;
+	}
+	
+	add_datetime(str) {
+		this.datetimes.push(1);
+	}
+	
+	set_address(str) {
+		this.address = str;
+	}
+	
+	set_name(str) {
+		this.name = str;
+	}
+}
+
+exports.map = map;
+exports.Target = Target;
