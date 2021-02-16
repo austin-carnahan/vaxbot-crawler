@@ -29,6 +29,10 @@ function buildSelector(element, children = false) {
 	return selector;
 }
 
+function testSomething(item) {
+	item.click()
+}
+
 class Crawler {
 	constructor(map) {
 		this.map = map;
@@ -42,11 +46,12 @@ class Crawler {
 		// STATUS: still being blocked
 		
 		//let crawling = true;
+		let browser;
+		let page;
+		let view_url;
+		let targets = []
 		
 		try {
-			let browser;
-			let page;
-			let view_url;
 			
 			if(newCrawl) {  
 				console.log("Launching puppet Chromium browser...");
@@ -68,7 +73,7 @@ class Crawler {
 				view_url = current_url;
 			}
 				
-			while (view_url != this.target_url) {
+			do {
 				view_url = stripURL(page.url());
 				let elements = [];
 				console.log(`initializing page crawl on: ${view_url}`);
@@ -83,22 +88,41 @@ class Crawler {
 				console.log("searching for elements...")
 				for(let i=0; i< elements.length; i++){
 					
+					
+					
 					if(elements[i].for_each_child) {
 						const selector = buildSelector(elements[i], true);
 						await page.waitForSelector(selector + ":nth-child(1)");
-						await page.$$eval(selector, elems => elems.map(elem => elem.click()));
-						await page.$$eval(selector, function(items) {
-							console.log(items);
-							items.forEach(async function(item){
-								console.log(item);
-								await item.click();
-							});
-						});
+						
+						//page.eval evaluates the given function in the BROWSER context!!! Not node
+						let elems_count = await page.$$eval(selector, elems => elems.length)
+						console.log(`iterating over ${elems_count} child elements...`);
+						
+						for(let i=0; i < elems_count; i++) {
+							console.log(`evaluating element ${i}`);
+								await page.$$eval(selector, function(items, i) {
+								items.forEach(async function(item, index){
+									if(index == i){
+										item.click();
+									}
+								});
+							}, i);
+							// Clicks in browser context activated. Here we code node context logic
+						}
+						
 						continue;
 					}
 					
 					const selector = buildSelector(elements[i]);
 					const data = elements[i].value;
+					
+					if(elements[i].target) {
+						try{
+							await page.waitForSelector(selector);
+						} catch (err) {
+							console.error(err);
+						}
+					}
 					
 					await page.waitForSelector(selector);
 					console.log("element located with matching selector");
@@ -142,7 +166,7 @@ class Crawler {
 						break;
 					}	
 				}
-			}
+			} while (view_url != this.target_url);
 			return 5;
 		} catch (err) {
 			console.error(err);

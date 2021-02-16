@@ -87,8 +87,8 @@ let map = {
 				subcrawl: true,
 				subcrawl_elements : [
 					{
-						element: "",
-						id: null,
+						element: "div",
+						id: "appointment-available",
 						target: true,
 						stop: true,
 					}
