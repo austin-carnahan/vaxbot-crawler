@@ -7,8 +7,9 @@ function stripURL(url_string){
 	return result.origin + result.pathname.replace(/\/$/, '');	
 }
 
-function buildSelector(element) {
+function buildSelector(element, children = false) {
 	let selector = null;
+
 	if(element.id && element.element) {
 		selector = `${element.element}[id="${element.id}"]`;
 	} else if(element.data_automation_id && element.element) {
@@ -19,6 +20,11 @@ function buildSelector(element) {
 	} else {
 		throw new Error(`Not enough information to build selector.`);
 	}
+
+	if(children){
+		selector += ` > ${element.child_element}`;
+	}
+	
 	console.log(`generated element selector: ${selector}`);
 	return selector;
 }
@@ -30,28 +36,38 @@ class Crawler {
 		this.target_url = map.target_url;
 	}
 	
-	async crawl() {
+	async crawl(newCrawl=true, current_page=null, current_url=null, custom_elements=null) {
 		// great info on how to keep headless chrome from being blocked:
 		// https://jsoverson.medium.com/how-to-bypass-access-denied-pages-with-headless-chrome-87ddd5f3413c
 		// STATUS: still being blocked
 		
-		try {  
-			console.log("Launching puppet Chromium browser...");
-			const browser = await puppeteer.launch({executablePath: '/usr/bin/chromium-browser',
-													headless: false});
-			const page = await browser.newPage();
-			await page.setDefaultNavigationTimeout(50000);
+		//let crawling = true;
+		
+		try {
+			let browser;
+			let page;
+			let view_url;
 			
-			// Trying to hide the fact that we're headless and automated
-			await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36');
-			await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
-			
-			// Start
-			console.log(`navigating to start url: ${this.start_url}`);
-			
-			await page.goto(this.start_url);
-			let view_url = this.start_url;
-			
+			if(newCrawl) {  
+				console.log("Launching puppet Chromium browser...");
+				browser = await puppeteer.launch({executablePath: '/usr/bin/chromium-browser',
+														headless: false});
+				page = await browser.newPage();
+				await page.setDefaultNavigationTimeout(50000);
+				
+				// Trying to hide the fact that we're headless and automated
+				await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36');
+				await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
+				
+				// Start
+				console.log(`navigating to start url: ${this.start_url}`);			
+				await page.goto(this.start_url);
+				view_url = this.start_url;
+			} else {
+				page = current_page;
+				view_url = current_url;
+			}
+				
 			while (view_url != this.target_url) {
 				view_url = stripURL(page.url());
 				let elements = [];
@@ -66,6 +82,21 @@ class Crawler {
 				
 				console.log("searching for elements...")
 				for(let i=0; i< elements.length; i++){
+					
+					if(elements[i].for_each_child) {
+						const selector = buildSelector(elements[i], true);
+						await page.waitForSelector(selector + ":nth-child(1)");
+						await page.$$eval(selector, elems => elems.map(elem => elem.click()));
+						await page.$$eval(selector, function(items) {
+							console.log(items);
+							items.forEach(async function(item){
+								console.log(item);
+								await item.click();
+							});
+						});
+						continue;
+					}
+					
 					const selector = buildSelector(elements[i]);
 					const data = elements[i].value;
 					
@@ -95,22 +126,28 @@ class Crawler {
 						if(!data) {
 							throw new Error(`ERROR: No value provided for input element: ${elements[i]}`);
 						}
+						let existing_text = await page.$eval(selector, (item) => item.value)
+						await page.focus(selector);
+						for(let i=0; i<existing_text.length; i++){
+							await page.keyboard.press('Backspace');
+						}
 						await page.$eval(selector, (item) => item.value = "");
 						await page.type(selector, data); 
+						
 					} else if (elements[i].type == "select"){
 						await page.$eval(selector, (item, value) => item.value = value, data);
+					}
+					
+					if(elements[i].stop) {
+						break;
 					}	
 				}
 			}
 			return 5;
 		} catch (err) {
 			console.error(err);
-			try {
-				await page.screenshot({ path: 'debug/screenshots/URL_not_in_map.png' });
-				await browser.close();
-			} catch (err) {
-				console.error(err);
-			}
+			//~ await page.screenshot({ path: 'debug/screenshots/URL_not_in_map.png' });
+			//~ await browser.close();
 			throw err;
 		}
 	}

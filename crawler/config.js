@@ -36,7 +36,8 @@ TARGETS.forEach(function(map, index) {
 	}
 })
 
-console.log(`The following target maps were successfully prepared: ${TARGETS}`);
+let map_names = TARGETS.map( item => item.name);
+console.log(`The following target maps were successfully prepared: ${map_names}`);
 //~ console.log(TARGETS[0].pages['https://www.walgreens.com/login.jsp']);
 
 

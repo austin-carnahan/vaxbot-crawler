@@ -42,7 +42,13 @@ let map = {
 				id: null,
 				value: "{ZIP}",
 				data_automation_id: "zipcode-form-input",
-				enter: true,
+			},
+			{
+				element: "button",
+				type: "button",
+				id: null,
+				data_automation_id: "find-stores",
+				classes: ["button--link"],
 			},
 			{
 				element: "input",
@@ -76,11 +82,18 @@ let map = {
 				element: "div",
 				data_automation_id: "book-slot-slotDates",
 				classes: ["index__slot__dates___1d3-l"],
-				clickEach: true,
-				children : {
-					element: "button",
-				},
-			}
+				for_each_child : true,
+				child_element : "button",
+				subcrawl: true,
+				subcrawl_elements : [
+					{
+						element: "",
+						id: null,
+						target: true,
+						stop: true,
+					}
+				],
+			},
 		],
 	},
 }
