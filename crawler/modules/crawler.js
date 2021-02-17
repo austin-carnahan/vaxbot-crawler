@@ -39,26 +39,25 @@ class Crawler {
 		this.Target = Target;
 		this.targets = [];
 		this.forking = false;
+		this.fork_count = null,
 		this.crawl = this.crawl.bind(this); //bind context for recursive crawler calls
 	}
 	
-	async crawl(fork_count=null, existing_target=null, sub_crawl=false, current_page=null, current_url=null, elements_list=null) {
+	async crawl(existing_target=null, sub_crawl=false, current_page=null, current_url=null, elements_list=null) {
 		// great info on how to keep headless chrome from being blocked:
 		// https://jsoverson.medium.com/how-to-bypass-access-denied-pages-with-headless-chrome-87ddd5f3413c
 		// STATUS: still being blocked by walgreens
 		
 		//let crawling = true;
-		let browser;
 		let page;
 		let view_url;
 		let target;
 		let elements;
-		console.log(fork_count);
+		let browser;
 		
 		try {
-			
-			if(!sub_crawl) {
-				
+
+			if(!sub_crawl){
 				target = new this.Target(this.map.name)
 				elements = null;
 				view_url = this.start_url;
@@ -75,7 +74,7 @@ class Crawler {
 				
 				// Start
 				console.log(`navigating to start url: ${this.start_url}`);			
-				await page.goto(view_url);
+				await page.goto(view_url);			
 				
 			} else {
 				console.log("starting sub crawl...")
@@ -115,32 +114,33 @@ class Crawler {
 						// This whole thing seems dangerous and sloppy;
 						if(elements[i].fork){
 							this.forking = true;
-							if(!fork_count){
-								fork_count = 0;
+							if(!this.fork_count){
+								this.fork_count = 0;
 							}
 							
-							console.log("FORKING! Count at: " + fork_count);
+							console.log("FORKING! Count at: " + this.fork_count);
 							
-							if(fork_count < elems_count){
+							if(this.fork_count < elems_count){
 								if(elements[i].target) {
 									console.log(`searching for target...in fork block`);
 									let data;
-									data = await page.$$eval(selector, (items, fork_count, process) =>
-										(process.method == "getAttribute") ? items[fork_count].getAttribute(process.value) : items[fork_count].textContext, fork_count, elements[i].process);
+									data = await page.$$eval(selector, (items, index, process) =>
+										(process.method == "getAttribute") ? items[index].getAttribute(process.value) : items[index].textContext, this.fork_count, elements[i].process);
 									console.log(`target retrieved: ${data}`);
 									target[elements[i].target](data);
 								}
 								
 								console.log("clicking fork selection");
-								await page.$$eval(selector, (items, fork_count) =>
-									items[fork_count].click(), fork_count)
+								await page.$$eval(selector, (items, index) =>
+									items[index].click(), this.fork_count)
 									
-								fork_count += 1;
-								if(fork_count >= elems_count) {
+								this.fork_count += 1;
+								if(this.fork_count >= elems_count) {
 									this.forking = false;
-									fork_count = null;
+									this.fork_count = null;
 								}
 							}
+							continue;
 						}
 						
 						console.log(`iterating over ${elems_count} child elements...`);	
@@ -149,7 +149,7 @@ class Crawler {
 							// browser context logic for element j						
 							
 							
-							if(elements[i].target && !this.forking) {
+							if(elements[i].target) {
 								console.log(`searching for target...`);
 								let data;
 								data = await page.$$eval(selector, (items, j, process) => 
@@ -165,7 +165,7 @@ class Crawler {
 								await page.$$eval(selector, (items, j) => items[j].click(), j);
 								// pause for visual inspection
 								await page.waitForTimeout(200);
-								target = await this.crawl(null, target, true, page, view_url, elements[i].subcrawl_elements);								
+								target = await this.crawl(target, true, page, view_url, elements[i].subcrawl_elements);								
 							}
 						}		
 						continue;
@@ -239,33 +239,37 @@ class Crawler {
 					} else if (elements[i].type == "select"){
 						console.log("selecting...");
 						await page.$eval(selector, (item, value) => item.value = value, data);
-					}
-					
-					if(elements[i].stop) {
-						break;
 					}	
+				}
+				
+				if(!sub_crawl && this.forking) {
+					console.log(" RESETTING TO START. FORKING TRUE");
+					this.targets.push(target);
+					target = new this.Target(this.map.name);
+					view_url = this.start_url;
+					await page.goto(this.start_url);
 				}
 			} while (view_url != this.target_url);
 			console.log("LEFT WHILE LOOP");
+			console.log(sub_crawl);
+			console.log(this.forking);
 			
 			if(sub_crawl){
+				console.log("subcrawl block")
 				return target;
-			} else if (this.forking) {
-				this.targets.push(target);
-				browser.close();
-				this.crawl(fork_count);
 			} else {
 				this.targets.push(target);
-				console.log(this.targets);
-				console.log("closing browser...");
-				browser.close();
-			} 
+				await browser.close();
+				return this.targets;
+				
+			}
 			
 		} catch (err) {
+			console.log("SOME WIERD ERROR!!!!!")
 			console.error(err);
 			//~ await page.screenshot({ path: 'debug/screenshots/URL_not_in_map.png' });
 			//~ await browser.close();
-			throw err;
+			//throw err;
 		}
 	}
 	

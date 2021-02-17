@@ -149,7 +149,7 @@ class Target {
 	}
 	
 	add_datetime(str) {
-		this.datetimes.push(1);
+		this.datetimes.push(str);
 	}
 	
 	set_address(str) {
