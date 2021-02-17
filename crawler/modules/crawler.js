@@ -64,7 +64,7 @@ class Crawler {
 				  
 				console.log("Launching puppet Chromium browser...");
 				browser = await puppeteer.launch({executablePath: '/usr/bin/chromium-browser',
-														headless: false});
+														headless: true});
 				page = await browser.newPage();
 				await page.setDefaultNavigationTimeout(50000);
 				

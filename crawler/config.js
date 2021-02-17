@@ -9,7 +9,7 @@ console.log(walmart);
 
 // register crawler targets
 const TARGETS = [
-	//walgreens,
+	//walgreens, //doesnt work headless atm
 	walmart
 ]
 
