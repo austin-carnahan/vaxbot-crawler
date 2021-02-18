@@ -1,4 +1,13 @@
-const puppeteer = require('puppeteer');
+//~ const puppeteer = require('puppeteer');
+
+// puppeteer-extra is a drop-in replacement for puppeteer,
+// it augments the installed puppeteer with plugin functionality
+const puppeteer = require('puppeteer-extra')
+
+// add stealth plugin and use defaults (all evasion techniques)
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
+
 const url = require('url');
 
 function stripURL(url_string){
@@ -69,8 +78,9 @@ class Crawler {
 				await page.setDefaultNavigationTimeout(50000);
 				
 				// Trying to hide the fact that we're headless and automated
-				await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36');
-				await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
+				//await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36');
+				//await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
+				await page.setCacheEnabled(false);
 				
 				//// TEST CODE FOR INTERCEPTION ////
 				await page._client.send('Network.setBypassServiceWorker', {bypass: true})
