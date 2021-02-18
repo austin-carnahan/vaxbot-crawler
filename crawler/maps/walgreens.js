@@ -197,10 +197,10 @@ let map = {
 }
 
 class Target {
-	constructor(source){
+	constructor(map){
 		this.name;
 		this.store_id;
-		this.location_type = source;
+		this.location_type = map.name;
 		this.address1;
 		this.city;
 		this.state;

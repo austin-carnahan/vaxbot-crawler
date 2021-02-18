@@ -3,15 +3,17 @@ const user = require("./.USER.js")
 // json site maps
 const walgreens = require("./maps/walgreens.js");
 const walmart = require("./maps/walmart.js");
+const mogov = require("./maps/mogov.js");
 
-
+console.log(mogov.map);
 console.log(walmart.map);
 console.log(walgreens.map);
 
 // register crawler targets
 const TARGETS = [
-	walgreens, //doesnt work headless atm
-	//walmart
+	mogov,
+	walgreens,
+	walmart
 ]
 
 

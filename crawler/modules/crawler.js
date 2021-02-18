@@ -67,13 +67,13 @@ class Crawler {
 		try {
 
 			if(!sub_crawl){
-				target = new this.Target(this.map.name)
+				target = new this.Target(this.map)
 				elements = null;
 				view_url = this.start_url;
 				  
 				console.log("Launching puppet Chromium browser...");
 				browser = await puppeteer.launch({executablePath: '/usr/bin/chromium-browser',
-														headless: true});
+														headless: false});
 				page = await browser.newPage();
 				await page.setDefaultNavigationTimeout(50000);
 				
@@ -137,7 +137,8 @@ class Crawler {
 						elements = this.map.pages[view_url];
 						console.log("SUCCESS: current view located in map.pages");
 					} else {
-						throw new Error(`View URL: ${view_url} not found in map. You may have been redirected.`);
+						throw new Error(`View URL: ${view_url} not found in map. You may have been redirected. \n
+										Also, check for trailing slashes in map URLS`);
 					}
 				};
 								
@@ -147,7 +148,7 @@ class Crawler {
 						//~ await page.waitForTimeout(240000);					
 						 //~ i--;
 					//~ }
-					// FOR EACH DESCENDANT ELEMENT LOGIC								
+					// FOR EACH DESCENDANT ELEMENT LOGIC	//TO DO: MAKE SURE THIS FAILS CORRECTLY!							
 					if(elements[i].for_each) {
 						const selector = buildSelector(elements[i], true);
 						await page.waitForSelector(selector + ":nth-child(1)"); // one of the elements in the list
@@ -166,7 +167,7 @@ class Crawler {
 								console.log(`searching for target...in loop block`);
 								let data;
 								data = await page.$$eval(selector, (items, index, process) =>
-									(process.method == "getAttribute") ? items[index].getAttribute(process.value) : items[index].textContext, this.loop, elements[i].process);
+									(process.method == "getAttribute") ? items[index].getAttribute(process.value) : items[index].textContent, this.loop, elements[i].process);
 								console.log(`target retrieved: ${data}`);
 								target[elements[i].target](data);
 							}
@@ -189,12 +190,18 @@ class Crawler {
 							
 							// EACH DESCENDANT IS A DATA TARGET												
 							if(elements[i].target) {
-								console.log(`searching for target...`);
+								console.log(`searching for target ${j}...`);
 								let data;
 								data = await page.$$eval(selector, (items, j, process) => 
-									(process.method == "getAttribute") ? items[j].getAttribute(process.value) : items[j].textContext, j, elements[i].process);							
+									(process.method == "getAttribute") ? items[j].getAttribute(process.value) : items[j].textContent, j, elements[i].process);							
 								console.log(`target retrieved: ${data}`);
-								target[elements[i].target](data);						
+								target[elements[i].target](data);
+								
+								// EACH DESCENDANT IS AN ENTIRE TARGET
+								if(elements[i].full_target && !(j == elems_count -1)) {
+									this.targets.push(target);
+									target = new this.Target(this.map);
+								}						
 							}		
 							
 							// START A RECURSIVE SUBCRAWL ON EACH DESCENDANT
@@ -297,7 +304,7 @@ class Crawler {
 					if(target){
 						this.targets.push(target);
 					}
-					target = new this.Target(this.map.name);
+					target = new this.Target(this.map);
 					view_url = this.start_url;
 					await page.goto(this.start_url);
 				}
