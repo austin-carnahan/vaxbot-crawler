@@ -24,7 +24,7 @@ function buildSelector(element, descendants = false) {
 	}
 
 	if(descendants){
-		selector += ` ${element.descendant}${element.d_type ? `[type=${element.d_type}]` : ``}`;
+		selector += ` ${element.descendant}${element.d_type ? `[type=${element.d_type}]` : ``}${element.d_class ? `.${element.d_class}` : ``}`;
 	}
 		
 	console.log(`generated element selector: ${selector}`);
@@ -64,7 +64,7 @@ class Crawler {
 				  
 				console.log("Launching puppet Chromium browser...");
 				browser = await puppeteer.launch({executablePath: '/usr/bin/chromium-browser',
-														headless: false});
+														headless: true});
 				page = await browser.newPage();
 				await page.setDefaultNavigationTimeout(50000);
 				

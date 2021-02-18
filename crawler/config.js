@@ -5,12 +5,13 @@ const walgreens = require("./maps/walgreens.js");
 const walmart = require("./maps/walmart.js");
 
 
-console.log(walmart);
+console.log(walmart.map);
+console.log(walgreens.map);
 
 // register crawler targets
 const TARGETS = [
-	//walgreens, //doesnt work headless atm
-	walmart
+	walgreens, //doesnt work headless atm
+	//walmart
 ]
 
 
@@ -32,6 +33,7 @@ TARGETS.forEach(function(item, index) {
 		}
 		TARGETS[index].map = JSON.parse(data);
 	} catch (err) {
+		console.error(err);
 		console.error(`ERROR: failed to parse target map: ${TARGETS[index].map.name}. Removing map from TARGETS.\n ${err}`);
 		TARGETS.splice(index, 1);
 		return;

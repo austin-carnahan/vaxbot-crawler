@@ -1,5 +1,6 @@
+const user = require("../.USER.js")
 
-const map = {
+let map = {
 	name: "walgreens",
 	start_url: "https://www.walgreens.com/findcare/vaccination/covid-19/eligibility-survey",
 	target_url: "https://www.walgreens.com/findcare/vaccination/covid-19/appointment/next-available",
@@ -195,4 +196,19 @@ const map = {
 	},
 }
 
-module.exports = map;
+class Target {
+	constructor(source){
+		this.name;
+		this.store_id;
+		this.location_type = source;
+		this.address1;
+		this.city;
+		this.state;
+		this.zip;
+		this.appointment_dates = [];
+		this.appointments_available = false;
+	}
+}
+
+exports.map = map;
+exports.Target = Target;
