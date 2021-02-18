@@ -38,8 +38,8 @@ class Crawler {
 		this.target_url = map.target_url;
 		this.Target = Target;
 		this.targets = [];
-		this.forking = false;
-		this.fork_count = null,
+		this.looping = false;
+		this.loop = 0,
 		this.crawl = this.crawl.bind(this); //bind context for recursive crawler calls
 	}
 	
@@ -64,13 +64,51 @@ class Crawler {
 				  
 				console.log("Launching puppet Chromium browser...");
 				browser = await puppeteer.launch({executablePath: '/usr/bin/chromium-browser',
-														headless: true});
+														headless: false});
 				page = await browser.newPage();
 				await page.setDefaultNavigationTimeout(50000);
 				
 				// Trying to hide the fact that we're headless and automated
 				await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36');
 				await page.setExtraHTTPHeaders({'Accept-Language': 'en-US,en;q=0.9'});
+				
+				//// TEST CODE FOR INTERCEPTION ////
+				await page._client.send('Network.setBypassServiceWorker', {bypass: true})
+				await page.setRequestInterception(true);
+				let storefinder_url = "https://www.walmart.com/pharmacy/v2/storefinder/stores";
+				let timeslots_url = "https://www.walmart.com/pharmacy/v2/clinical-services/time-slots";
+
+				page.on('request', async (request) => {
+					//~ console.log('>>', request.method(), request.url().substring(1, 80),)
+					if(request.url().includes("www.walmart.com/pharmacy/v2")) {
+						console.log('>>', request.method(), request.url(), request.headers())				
+					}
+					if(request.url().includes(storefinder_url)) {
+						console.log("URL MATCH!");
+						console.log('>>', request.method(), request.url(), request.headers())			
+					}
+					request.continue()
+				})
+
+				page.on('response', (response) => {
+					//~ console.log('<<', response.status(), response.url().substring(1, 60));
+					if(response.url().includes("www.walmart.com/pharmacy/v2")) {
+						console.log('<<', response.status(), response.url());				
+					}
+					if(response.url().includes(storefinder_url)) {
+						console.log('<<', response.status(), response.url());
+						console.log("URL MATCH!");
+						let url = response.url()
+						response.json().then(response => target.intercept_storefinder(response, this.loop, url));			
+					}
+					
+					if(response.url().includes(timeslots_url)) {
+						console.log('<<', response.status(), response.url());
+						console.log("URL MATCH!")
+						response.json().then(response => target.intercept_timeslots(response));
+					}
+					
+				})	
 				
 				// Start
 				console.log(`navigating to start url: ${this.start_url}`);			
@@ -103,7 +141,12 @@ class Crawler {
 								
 				console.log("searching for elements...")
 				for(let i=0; i< elements.length; i++){
-													
+					//~ if(elements[i].data_automation_id == "store-list-container"){
+						//~ await page.waitForTimeout(240000);
+						
+						 //~ i--;
+					//~ }
+					// FOR EACH DESCENDANT ELEMENT LOGIC								
 					if(elements[i].for_each) {
 						const selector = buildSelector(elements[i], true);
 						await page.waitForSelector(selector + ":nth-child(1)"); // one of the elements in the list
@@ -111,44 +154,39 @@ class Crawler {
 						//page.eval evaluates the given function in the BROWSER context!!! Not node
 						let elems_count = await page.$$eval(selector, elems => elems.length);
 						
+						// LOOP LOGIC
 						// This whole thing seems dangerous and sloppy;
-						if(elements[i].fork){
-							this.forking = true;
-							if(!this.fork_count){
-								this.fork_count = 0;
+						if(elements[i].loop){
+							this.looping = true;
+							
+							console.log("LOOPING! Count at: " + this.loop);
+							
+							if(elements[i].target) {
+								console.log(`searching for target...in loop block`);
+								let data;
+								data = await page.$$eval(selector, (items, index, process) =>
+									(process.method == "getAttribute") ? items[index].getAttribute(process.value) : items[index].textContext, this.loop, elements[i].process);
+								console.log(`target retrieved: ${data}`);
+								target[elements[i].target](data);
 							}
 							
-							console.log("FORKING! Count at: " + this.fork_count);
-							
-							if(this.fork_count < elems_count){
-								if(elements[i].target) {
-									console.log(`searching for target...in fork block`);
-									let data;
-									data = await page.$$eval(selector, (items, index, process) =>
-										(process.method == "getAttribute") ? items[index].getAttribute(process.value) : items[index].textContext, this.fork_count, elements[i].process);
-									console.log(`target retrieved: ${data}`);
-									target[elements[i].target](data);
-								}
+							console.log("clicking loop selection");
+							await page.$$eval(selector, (items, index) =>
+								items[index].click(), this.loop)
 								
-								console.log("clicking fork selection");
-								await page.$$eval(selector, (items, index) =>
-									items[index].click(), this.fork_count)
-									
-								this.fork_count += 1;
-								if(this.fork_count >= elems_count) {
-									this.forking = false;
-									this.fork_count = null;
-								}
-							}
-							continue;
-						}
+							this.loop += 1;
 						
-						console.log(`iterating over ${elems_count} child elements...`);	
+							if(this.loop >= elems_count) {
+								this.looping = false;
+								this.loop = 0;
+							};
+							
+							continue;
+						}	
+						
 						for(let j=0; j < elems_count; j++) {
 							
-							// browser context logic for element j						
-							
-							
+							// EACH DESCENDANT IS A DATA TARGET												
 							if(elements[i].target) {
 								console.log(`searching for target...`);
 								let data;
@@ -158,15 +196,19 @@ class Crawler {
 								target[elements[i].target](data);						
 							}		
 							
-							// node context logic for element j
-							
+							// START A RECURSIVE SUBCRAWL ON EACH DESCENDANT
 							if(elements[i].subcrawl_elements) {
 								console.log("subcrawl elements found...");
 								await page.$$eval(selector, (items, j) => items[j].click(), j);
 								// pause for visual inspection
 								await page.waitForTimeout(200);
 								target = await this.crawl(target, true, page, view_url, elements[i].subcrawl_elements);								
+							
+							// OR JUST CLICK EACH DESCENDANT ELEMENT
+							} else {
+								await page.$$eval(selector, (items, j) => items[j].click(), j);
 							}
+						
 						}		
 						continue;
 					}
@@ -174,7 +216,7 @@ class Crawler {
 					const selector = buildSelector(elements[i]);
 					const data = elements[i].value;
 					
-					// Map element is target
+					// ELEMENT IS DATA TARGET
 					if(elements[i].target) {
 						try{
 							console.log("searching for target...")
@@ -199,8 +241,13 @@ class Crawler {
 						continue;
 						
 					}
-					
-					await page.waitForSelector(selector);
+					try{
+						await page.waitForSelector(selector);
+					} catch(err) {
+						console.error(`UNABLE TO LOCATE SELECTOR: Dumping target data! \n ${err}`);
+						this.target = null;
+						break;
+					}
 					console.log("element located");
 					
 					if(elements[i].navigation){!
@@ -240,11 +287,15 @@ class Crawler {
 						console.log("selecting...");
 						await page.$eval(selector, (item, value) => item.value = value, data);
 					}	
+					await page.waitForTimeout(4000);
+					
 				}
 				
-				if(!sub_crawl && this.forking) {
-					console.log(" RESETTING TO START. FORKING TRUE");
-					this.targets.push(target);
+				if(!sub_crawl && this.looping) {
+					console.log(" RESETTING TO START. looping TRUE");
+					if(target){
+						this.targets.push(target);
+					}
 					target = new this.Target(this.map.name);
 					view_url = this.start_url;
 					await page.goto(this.start_url);
@@ -252,10 +303,10 @@ class Crawler {
 			} while (view_url != this.target_url);
 			console.log("LEFT WHILE LOOP");
 			console.log(sub_crawl);
-			console.log(this.forking);
+			console.log(this.looping);
 			
 			if(sub_crawl){
-				console.log("subcrawl block")
+				console.log("END SUBCRAWL")
 				return target;
 			} else {
 				this.targets.push(target);
@@ -265,7 +316,6 @@ class Crawler {
 			}
 			
 		} catch (err) {
-			console.log("SOME WIERD ERROR!!!!!")
 			console.error(err);
 			//~ await page.screenshot({ path: 'debug/screenshots/URL_not_in_map.png' });
 			//~ await browser.close();
