@@ -154,10 +154,8 @@ class Target {
 	}
 	
 	intercept_storefinder(response, index, url) {
-		console.log("RECIEVED STORE DATA")
-		//console.log("STORE NAME: " + response.data.storesData.stores[index].displayName);
+		console.log("RECIEVED STORE DATA:")
 		console.log(response);
-		
 		let newUrl = new URL(url);
 		if(newUrl.searchParams.get('searchString') == user.personal.ZIP.toString()) {
 			console.log("VERIFY RESPONSE DATA: ZIP IN URL = TRUE");
@@ -174,8 +172,8 @@ class Target {
 	}
 	
 	intercept_timeslots(response) {
-		console.log("RECIEVED APPOINTMENT DATA")
-		//console.log(response);
+		console.log("RECIEVED APPOINTMENT DATA:")
+		console.log(response);
 		response.data.slotDays.map( item => {
 			if(item.slots.length > 0) {
 				this.appointment_dates.push(item);

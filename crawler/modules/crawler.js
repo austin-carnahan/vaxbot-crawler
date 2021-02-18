@@ -79,10 +79,6 @@ class Crawler {
 				let timeslots_url = "https://www.walmart.com/pharmacy/v2/clinical-services/time-slots";
 
 				page.on('request', async (request) => {
-					//~ console.log('>>', request.method(), request.url().substring(1, 80),)
-					if(request.url().includes("www.walmart.com/pharmacy/v2")) {
-						console.log('>>', request.method(), request.url(), request.headers())				
-					}
 					if(request.url().includes(storefinder_url)) {
 						console.log("URL MATCH!");
 						console.log('>>', request.method(), request.url(), request.headers())			
@@ -91,10 +87,6 @@ class Crawler {
 				})
 
 				page.on('response', (response) => {
-					//~ console.log('<<', response.status(), response.url().substring(1, 60));
-					if(response.url().includes("www.walmart.com/pharmacy/v2")) {
-						console.log('<<', response.status(), response.url());				
-					}
 					if(response.url().includes(storefinder_url)) {
 						console.log('<<', response.status(), response.url());
 						console.log("URL MATCH!");
@@ -142,8 +134,7 @@ class Crawler {
 				console.log("searching for elements...")
 				for(let i=0; i< elements.length; i++){
 					//~ if(elements[i].data_automation_id == "store-list-container"){
-						//~ await page.waitForTimeout(240000);
-						
+						//~ await page.waitForTimeout(240000);					
 						 //~ i--;
 					//~ }
 					// FOR EACH DESCENDANT ELEMENT LOGIC								
@@ -245,7 +236,7 @@ class Crawler {
 						await page.waitForSelector(selector);
 					} catch(err) {
 						console.error(`UNABLE TO LOCATE SELECTOR: Dumping target data! \n ${err}`);
-						this.target = null;
+						target = null;
 						break;
 					}
 					console.log("element located");
@@ -287,7 +278,7 @@ class Crawler {
 						console.log("selecting...");
 						await page.$eval(selector, (item, value) => item.value = value, data);
 					}	
-					await page.waitForTimeout(4000);
+					await page.waitForTimeout(1000);
 					
 				}
 				
