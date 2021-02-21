@@ -2,7 +2,7 @@
   "name": "vaxbot",
   "version": "1.0.0",
   "description": "VaxBot is inspired by the work of Huge Ma and their work on TurboVax for NYC @ https://www.turbovax.info",
-  "main": "walgreens.js",
+  "main": "app.js",
   "dependencies": {
     "cheerio": "^1.0.0-rc.5",
     "node-fetch": "^2.6.1",
@@ -16,6 +16,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Austin Carnahan",
   "license": "ISC"
 }

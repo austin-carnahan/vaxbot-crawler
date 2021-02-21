@@ -1,5 +1,4 @@
-**/.USER.js
+**/USER.js
 **/.env
-crawler/node_modules
-crawler/screenshots
-twitter_bot/venv
+node_modules
+screenshots
