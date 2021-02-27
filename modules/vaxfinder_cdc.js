@@ -41,32 +41,32 @@ async function format_data(batch) {
         return tags
     }
     
-    function parse_tags(location) {
+    function parse_tags(provider) {
         let tags = [];
-        if(location.accepts_walk_ins) {
+        if(provider.accepts_walk_ins) {
             tags.push("walk-ins");
         }
         return tags
     }
     
-    let data = batch.map(location => {
+    let data = batch.map(provider => {
         return {
-            name: location.name,
-            cdc_id: location.guid,
-            source_updated: location.last_updated || null,
+            name: provider.name,
+            cdc_id: provider.guid,
+            source_updated: provider.last_updated || null,
             source_url: "https://vaccinefinder.org/",
             source_name: "CDC Vaccine Finder",
-            address1: location.address1,
-            address2: location.address2 || null,
-            city: location.city,
-            state: location.state,
-            zip: location.zip,
-            lat: location.lat,
-            lon: location.long,
-            tags: parse_tags(location),
-            contact_url: location.prescreening_site || location.website,
-            vaccine_available: parse_availability(location.inventory),
-            vaccine_tags: parse_vaccine_tags(location.inventory),
+            address1: provider.address1,
+            address2: provider.address2 || null,
+            city: provider.city,
+            state: provider.state,
+            zip: provider.zip,
+            lat: provider.lat,
+            lon: provider.long,
+            tags: parse_tags(provider),
+            contact_url: provider.prescreening_site || provider.website,
+            vaccine_available: parse_availability(provider.inventory),
+            vaccine_tags: parse_vaccine_tags(provider.inventory),
         }
     });
     
@@ -99,7 +99,7 @@ async function get_providers (location, search_radius=25) {
     try{
         console.log("Pinging US Census Bureau...")
         const coordinates = await fetch(encodeURI(
-            `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${location.address1},${location.address2 ? location.address2 : ""},${location.city},${location.state},${location.zip}&benchmark=2020&format=json`))
+            `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${location.address1},${location.address2 ? location.address2 : ""},${location.city},${location.state},${location.zip ? location.zip : ""}&benchmark=2020&format=json`))
                 .then(async (response) => await response.json())
                 .then(json => json.result.addressMatches[0].coordinates)
                 

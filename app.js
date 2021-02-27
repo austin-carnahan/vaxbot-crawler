@@ -1,7 +1,9 @@
 require('dotenv').config();
-const settings = require("./settings")
+const settings = require("./settings");
 
 const vaccinefinder = require("./scripts/vaccinefinder");
+const mogov = require("./scripts/mogov.js");
+
 
 // where we'll store data as it arrives.
 let results = [];
@@ -9,6 +11,7 @@ let results = [];
 //scripts to run
 const scripts = [
 	vaccinefinder,
+	mogov,
 ]
 
 function concat_arrays(arr1, arr2) {
@@ -16,10 +19,14 @@ function concat_arrays(arr1, arr2) {
 	return temp
 }
 
-async function start_finder() {
+async function start_crawler() {
 	for(let script of scripts) {
-		let data = await script();
-		results = concat_arrays(results, data);
+		try {
+			let data = await script();
+			results = concat_arrays(results, data);
+		} catch(err) {
+			console.log(`FAILURE. Aborting script... \n ${err}`);
+		}
 	}
 	
 	for(let item of results) {
@@ -29,7 +36,7 @@ async function start_finder() {
 	console.log(results);
 }
 
-start_finder();
+start_crawler();
 
 
 

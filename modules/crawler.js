@@ -92,7 +92,6 @@ class Crawler {
 				page.on('request', async (request) => {
 					if(this.map.http_request_listener) {
 						let url = this.map.http_request_listener.url;
-						//~ let skip = this.map.http_request_listener.ignore;
 						if(request.url().includes(url) ) {
 							console.log("URL MATCH!");
 							console.log('>>', request.method(), request.url(), request.headers())			
@@ -105,7 +104,6 @@ class Crawler {
 					
 					if(this.map.http_request_listener) {
 						let url = this.map.http_request_listener.url
-						//~ let skip = this.map.http_request_listener.ignore;
 						if(response.url().includes(url)) {
 							console.log('<<', response.status(), response.url());
 							console.log("URL MATCH!");
