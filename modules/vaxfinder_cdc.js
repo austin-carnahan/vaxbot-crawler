@@ -1,29 +1,22 @@
 const fetch = require('node-fetch');
 const { Headers } = require('node-fetch');
-const user = require("./USER.js");
 
-/*  Vaxfinder is a script designed to get vaccine provider information from the CDC / Castlight Health API at api.us.castlighthealth.com.
+/* Vaxfinder CDC is a script designed to get vaccine provider information from the CDC / Castlight Health API at api.us.castlighthealth.com.
  * The CDC's new user-facing site vaccinefinder.org uses this.
  * The API is open, although not publicly documented at this time. It doesn't like it if you're brazenly accessing it programmatically.
  * Be nice and send headers. There some below that seem to work well.
  * 
- * The list of providers returned is ordered by shortest distance from a lat/lon origin and is capped at 50 items.
+ * The CDC'sreturned list of providers is ordered by least distance from a lat/lon origin and is capped at 50 items.
  * It also doesn't currently discriminate based on state boundaries. So.. if your hoping to find as many Missouri
  * providers as possible, consider a point of origin and search radius that won't overflow into another state. 
+ * 
+ * Main function: get_providers()
+ * parameters: location = {address1: "", address2: "", city: "", state: "", zip: ""}, search_radius = Number (in miles)
+ * returns: an array of CDC provided data formatted for submission to the vaxbot api
  * 
  */
 
 async function format_data(batch) {
-    
-    //get channel infomation so we can pull an id
-    //~ const channel = await fetch("url/channels")
-        //~ .then(async response => await response.json)
-        //~ .then(json => json.filter( channel => channel.name === user.location.CHANNEL))
-        
-    //~ const channel = { 
-        //~ name: "St. Louis",
-        //~ id: "12345678910"
-    //~ }
     
     function parse_availability(inventory){
         for(let item of inventory) {
@@ -41,7 +34,7 @@ async function format_data(batch) {
             if(item.in_stock == "TRUE") {
                 tags.push(item.name.replace(/COVID Vaccine/, "").trim())
                 if (item.supply_level == "LOW_SUPPLY" || item.supply_level == "NO_SUPPLY") {
-                    tags.push("Low/Restricted Supply");
+                    tags.push("Restricted/Limited Supply");
                 }    
             }
         }
@@ -60,11 +53,11 @@ async function format_data(batch) {
         return {
             name: location.name,
             cdc_id: location.guid,
-            source_updated: location.last_updated,
+            source_updated: location.last_updated || null,
             source_url: "https://vaccinefinder.org/",
             source_name: "CDC Vaccine Finder",
             address1: location.address1,
-            address2: location.address2,
+            address2: location.address2 || null,
             city: location.city,
             state: location.state,
             zip: location.zip,
@@ -77,7 +70,7 @@ async function format_data(batch) {
         }
     });
     
-    console.log(data);
+    return data;
 }
 
 async function get_providers (location, search_radius=25) {
@@ -106,7 +99,7 @@ async function get_providers (location, search_radius=25) {
     try{
         console.log("Pinging US Census Bureau...")
         const coordinates = await fetch(encodeURI(
-            `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${location.address1},${location.address2 ? address2 : ""},${location.city},${location.state},${location.zip}&benchmark=2020&format=json`))
+            `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${location.address1},${location.address2 ? location.address2 : ""},${location.city},${location.state},${location.zip}&benchmark=2020&format=json`))
                 .then(async (response) => await response.json())
                 .then(json => json.result.addressMatches[0].coordinates)
                 
@@ -163,8 +156,5 @@ async function get_providers (location, search_radius=25) {
     
     return format_data(providers_detailed);
 }
-
-
-get_providers(user.location, user.location.search_radius);
 
 module.exports = get_providers;

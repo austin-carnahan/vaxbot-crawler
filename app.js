@@ -1,21 +1,40 @@
-const config = require("./config.js");
-const Crawler = require("./modules/crawler.js");
+require('dotenv').config();
+const settings = require("./settings")
 
-async function launch_crawler(map, target_class) {
-	let data;
-	try {
-		let spider = new Crawler(map, target_class);
-		data = await spider.crawl();
-		await console.log("SPIDER FINISHED");
-		await console.log(data);
-	} catch (err) {
-		console.error(`ERROR: crawler for ${map.name} has failed. \n ${err}`);
+const vaccinefinder = require("./scripts/vaccinefinder");
+
+// where we'll store data as it arrives.
+let results = [];
+
+//scripts to run
+const scripts = [
+	vaccinefinder,
+]
+
+function concat_arrays(arr1, arr2) {
+	let temp = arr1.concat(arr2);
+	return temp
+}
+
+async function start_finder() {
+	for(let script of scripts) {
+		let data = await script();
+		results = concat_arrays(results, data);
 	}
+	
+	for(let item of results) {
+		item.channels = [settings.channel];
+	}
+	
+	console.log(results);
 }
 
+start_finder();
 
-for(let i=0; i< config.length; i++) {
-	launch_crawler(config[i].map, config[i].Target);	
-}
+
+
+
+
+
 
 
