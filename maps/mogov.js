@@ -1,4 +1,4 @@
-const user = require("../.USER.js")
+const user = require("../USER.js")
 
 let map = {
 	name: "Missouri Stronger Together",

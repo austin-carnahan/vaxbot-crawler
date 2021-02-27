@@ -55,7 +55,6 @@ class Crawler {
 	async crawl(existing_target=null, sub_crawl=false, current_page=null, current_url=null, elements_list=null) {
 		// great info on how to keep headless chrome from being blocked:
 		// https://jsoverson.medium.com/how-to-bypass-access-denied-pages-with-headless-chrome-87ddd5f3413c
-		// STATUS: still being blocked by walgreens
 		
 		//let crawling = true;
 		let page;
@@ -66,7 +65,7 @@ class Crawler {
 		
 		try {
 
-			if(!sub_crawl){
+			if(!sub_crawl) {
 				target = new this.Target(this.map)
 				elements = null;
 				view_url = this.start_url;
@@ -85,32 +84,43 @@ class Crawler {
 				//// TEST CODE FOR INTERCEPTION ////
 				await page._client.send('Network.setBypassServiceWorker', {bypass: true})
 				await page.setRequestInterception(true);
-				let storefinder_url = "https://www.walmart.com/pharmacy/v2/storefinder/stores";
-				let timeslots_url = "https://www.walmart.com/pharmacy/v2/clinical-services/time-slots";
-
+				let index = null;
+				if(this.looping) {
+				 index = this.loop;
+				}
+				
 				page.on('request', async (request) => {
-					if(request.url().includes(storefinder_url)) {
-						console.log("URL MATCH!");
-						console.log('>>', request.method(), request.url(), request.headers())			
+					if(this.map.http_request_listener) {
+						let url = this.map.http_request_listener.url;
+						//~ let skip = this.map.http_request_listener.ignore;
+						if(request.url().includes(url) ) {
+							console.log("URL MATCH!");
+							console.log('>>', request.method(), request.url(), request.headers())			
+						}
 					}
 					request.continue()
 				})
-
-				page.on('response', (response) => {
-					if(response.url().includes(storefinder_url)) {
-						console.log('<<', response.status(), response.url());
-						console.log("URL MATCH!");
-						let url = response.url()
-						response.json().then(response => target.intercept_storefinder(response, this.loop, url));			
-					}
+				
+				page.on('response', async (response) => {
 					
-					if(response.url().includes(timeslots_url)) {
-						console.log('<<', response.status(), response.url());
-						console.log("URL MATCH!")
-						response.json().then(response => target.intercept_timeslots(response));
+					if(this.map.http_request_listener) {
+						let url = this.map.http_request_listener.url
+						//~ let skip = this.map.http_request_listener.ignore;
+						if(response.url().includes(url)) {
+							console.log('<<', response.status(), response.url());
+							console.log("URL MATCH!");
+							await page.waitForTimeout(3000);
+							let r_url = response.url()
+							console.log(response);
+							let data = response.body;
+							console.log(data)
+							let json = await response.json();
+							
+							console.log(data)
+							//~ await response.json().then(response => target[map.http_request_listener.target](response, index, r_url));			
+						}
 					}
-					
-				})	
+				});	
 				
 				// Start
 				console.log(`navigating to start url: ${this.start_url}`);			
@@ -274,9 +284,13 @@ class Crawler {
 					* https://github.com/puppeteer/puppeteer/issues/3347
 					*/						
 					console.log("clicking...");
-					await page.$eval(selector, item => item.click());
+					if(elements[i].click_type == "puppet") {
+						await page.click(selector);
+					} else {
+						await page.$eval(selector, item => item.click());
+					}
 					
-					if(elements[i].type == "text") {
+					if(elements[i].type == "text" || elements[i].type == "number") {
 						// if it's an option, typing helps keep us undetected and unblocked
 						// can also clear text by triple clicking and hitting backspace
 						console.log("typing...");
@@ -308,7 +322,7 @@ class Crawler {
 					view_url = this.start_url;
 					await page.goto(this.start_url);
 				}
-			} while (view_url != this.target_url);
+			} while (view_url != this.target_url || this.looping);
 			console.log("LEFT WHILE LOOP");
 			console.log(sub_crawl);
 			console.log(this.looping);
