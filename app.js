@@ -11,7 +11,7 @@ const url = process.env.VAXBOT_API_URL
 let results = [];
 
 
-//scripts to run
+//scripts to run. Dont forget to import new ones!
 const scripts = [
 	vaccinefinder,
 	mogov,
@@ -32,19 +32,18 @@ async function send_data() {								// NO SUPPORT FOR MULTIPLE CHANNELS RN
 		.then(channel => channel[0])
 	
 	for(let item of results) {
-		item.channels = [];
-		item.channels.push(channel._id);
+		item.channel = channel._id;
 	}
 	
 	console.log(results);
 	
-	await fetch(url + "/v1/locations/batch", {
+	await fetch(url + "/v1/providers/batch", {
 		method: 'POST',
 		body: JSON.stringify(results),
 		headers: { 'Content-Type': 'application/json' }
 	})
 		//~ .then(async res => await res.json())
-		.then(json => console.log(json))
+		.then(res => console.log(res))
 		
 }
 
