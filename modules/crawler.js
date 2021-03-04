@@ -84,41 +84,37 @@ class Crawler {
 				//// TEST CODE FOR INTERCEPTION ////
 				await page._client.send('Network.setBypassServiceWorker', {bypass: true})
 				await page.setRequestInterception(true);
-				let index = null;
-				if(this.looping) {
-				 index = this.loop;
-				}
+				//~ let index = null;
+				//~ if(this.looping) {
+				 //~ index = this.loop;
+				//~ }
 				
+				let storefinder_url = "https://www.walmart.com/pharmacy/v2/storefinder/stores";
+				let timeslots_url = "https://www.walmart.com/pharmacy/v2/clinical-services/time-slots";
+
 				page.on('request', async (request) => {
-					if(this.map.http_request_listener) {
-						let url = this.map.http_request_listener.url;
-						if(request.url().includes(url) ) {
-							console.log("URL MATCH!");
-							console.log('>>', request.method(), request.url(), request.headers())			
-						}
+					if(request.url().includes(storefinder_url)) {
+						console.log("URL MATCH!");
+						console.log('>>', request.method(), request.url(), request.headers())			
 					}
 					request.continue()
-				})
-				
+				});
+
 				page.on('response', async (response) => {
-					
-					if(this.map.http_request_listener) {
-						let url = this.map.http_request_listener.url
-						if(response.url().includes(url)) {
-							console.log('<<', response.status(), response.url());
-							console.log("URL MATCH!");
-							await page.waitForTimeout(3000);
-							let r_url = response.url()
-							console.log(response);
-							let data = response.body;
-							console.log(data)
-							let json = await response.json();
-							
-							console.log(data)
-							//~ await response.json().then(response => target[map.http_request_listener.target](response, index, r_url));			
-						}
+					if(response.url().includes(storefinder_url)) {
+						console.log('<<', response.status(), response.url());
+						console.log("URL MATCH!");
+						let url = response.url()
+						await response.json().then(response => target.intercept_storefinder(response, this.loop, url));			
 					}
-				});	
+
+					if(response.url().includes(timeslots_url)) {
+						console.log('<<', response.status(), response.url());
+						console.log("URL MATCH!")
+						await response.json().then(response => console.log(response))
+						await response.json().then(response => target.intercept_timeslots(response));
+					}
+				});
 				
 				// Start
 				console.log(`navigating to start url: ${this.start_url}`);			
@@ -314,8 +310,10 @@ class Crawler {
 				if(!sub_crawl && this.looping) {
 					console.log(" RESETTING TO START. looping TRUE");
 					if(target){
+						console.log(target)
 						this.targets.push(target);
 					}
+					console.log(this.targets)
 					target = new this.Target(this.map);
 					view_url = this.start_url;
 					await page.goto(this.start_url);
@@ -329,7 +327,11 @@ class Crawler {
 				console.log("END SUBCRAWL")
 				return target;
 			} else {
-				this.targets.push(target);
+				console.log("END CRAWLER")
+				if(target){
+					this.targets.push(target);
+					console.log(this.targets)
+				}
 				await browser.close();
 				return this.targets;
 				

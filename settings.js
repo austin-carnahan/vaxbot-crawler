@@ -7,6 +7,7 @@ const settings = {
 	},
 	channel : "STL",
 	search_radius: 25, //miles
+	
 }
 
 module.exports = settings

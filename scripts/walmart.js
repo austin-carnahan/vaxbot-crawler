@@ -1,4 +1,6 @@
-const user = require("../USER.js")
+const user = require("../user.js")
+const settings = require("../settings.js")
+const Crawler = require("../modules/crawler.js");
 
 let map = {
 	name: "walmart",
@@ -12,13 +14,13 @@ let map = {
 				element: "input",
 				type: "text",
 				id: "email",
-				value: "{USERNAME}",
+				value: user.walmart.username,
 			},
 			{
 				element: "input",
 				type: "text",
 				id: "password",
-				value: "{PASSWORD}",
+				value: user.walmart.password,
 			},
 			{
 				element: "button",
@@ -42,7 +44,7 @@ let map = {
 				element: "input",
 				type: "text",
 				id: null,
-				value: "{ZIP}",
+				value: settings.location.zip,
 				data_automation_id: "zipcode-form-input",
 			},
 			{
@@ -99,8 +101,6 @@ let map = {
 				element: "div",
 				data_automation_id: "book-slot-slotDates",
 				classes: ["index__slot__dates___1d3-l"],
-				//~ target: "set_temp_date",
-				//~ process: {method: "getAttribute", value: "aria-label"},
 				for_each : true,
 				descendant : "button",
 				d_type: null,
@@ -122,14 +122,17 @@ let map = {
 class Target {
 	constructor(map){
 		this.name;
-		this.store_id;
-		this.location_type = map.name;
+		this.source_id;
+		this.source_name = map.name;
+		this.source_url = map.base_url; 
 		this.address1;
 		this.city;
 		this.state;
 		this.zip;
-		this.appointment_dates = [];
-		this.appointments_available = false;
+		this.lat;
+		this.lon;
+		this.vaccine_available = false;
+		this.dates = [];
 	}
 	
 	set_temp_date(str) {
@@ -156,33 +159,43 @@ class Target {
 	intercept_storefinder(response, index, url) {
 		console.log("RECIEVED STORE DATA:")
 		console.log(response);
+		console.log(index);
+		console.log(response.data.storesData.stores[index])
 		let newUrl = new URL(url);
-		if(newUrl.searchParams.get('searchString') == user.personal.ZIP.toString()) {
+		if(newUrl.searchParams.get('searchString') == settings.location.zip.toString()) {
 			console.log("VERIFY RESPONSE DATA: ZIP IN URL = TRUE");
-			if(response.data.storesData.stores[index].address.state == user.personal.STATE_ABBR) {
+			if(response.data.storesData.stores[index].address.state == settings.location.state) {
 				console.log("VERIFY RESPONSE DATA: CORRECT STATE = TRUE");
 				this.name = response.data.storesData.stores[index].displayName;
-				this.store_id = response.data.storesData.stores[index].id;
+				this.source_id = response.data.storesData.stores[index].id;
 				this.address1 = response.data.storesData.stores[index].address.address1;
 				this.city = response.data.storesData.stores[index].address.city;
 				this.state = response.data.storesData.stores[index].address.state;
 				this.zip = response.data.storesData.stores[index].address.postalCode;
+				this.lat = response.data.storesData.stores[index].geoPoint.latitude;
+				this.lon = response.data.storesData.stores[index].geoPoint.longitude;
 			}
 		}
 	}
 	
 	intercept_timeslots(response) {
 		console.log("RECIEVED APPOINTMENT DATA:")
-		console.log(response);
 		response.data.slotDays.map( item => {
+			console.log(item);
 			if(item.slots.length > 0) {
-				this.appointment_dates.push(item);
+				this.dates.push(item);
 			}
 		});
 		
-		this.appointments_available = this.appointment_dates.length > 0;
+		this.vaccine_available = this.dates.length > 0;
 	}
 }
 
-exports.map = map;
-exports.Target = Target;
+async function walmart() {
+	let data;
+	const crawler = new Crawler(map, Target);
+	data = await crawler.crawl();
+	return data;	
+}
+
+module.exports = walmart;

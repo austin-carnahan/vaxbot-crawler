@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const settings = require("./settings");
 const vaccinefinder = require("./scripts/vaccinefinder");
 const mogov = require("./scripts/mogov.js");
+const walmart = require("./scripts/walmart.js")
 
 const url = process.env.VAXBOT_API_URL
 
@@ -15,6 +16,7 @@ let results = [];
 const scripts = [
 	vaccinefinder,
 	mogov,
+	walmart
 ]
 
 
@@ -52,6 +54,7 @@ async function start_crawler() {
 	for(let script of scripts) {
 		try {
 			let data = await script();
+			console.log(data);
 			results = concat_arrays(results, data);
 		} catch(err) {
 			console.log(`FAILURE. Aborting script... \n ${err}`);

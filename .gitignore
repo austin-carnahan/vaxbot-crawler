@@ -1,4 +1,3 @@
-**/USER.js
-**/.env
+.env
 node_modules
-screenshots
+user.js

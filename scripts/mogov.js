@@ -31,7 +31,7 @@ class Target {
 	constructor(map){
 		this.name;
 		this.source_url = "https://covidvaccine.mo.gov/events";
-		this.source_name = "MO Dept. of Health";
+		this.source_name = "MO Department of Health";
 		this.address1;
 		this.address2;
 		this.city;
@@ -51,6 +51,12 @@ class Target {
 		if(text.includes("BOOSTER ONLY")) {
 			this.vaccine_available = true;
 			this.vaccine_tags.push("Booster Only");
+		} else if (text.includes("BOOSTER")) {
+			this.vaccine_available = true;
+			this.vaccine_tags.push("Booster Only");
+		} else if (text.includes("LOCAL REGISTRATION")) {
+			this.vaccine_available = true;
+			this.vaccine_tags.push("Local Registration");
 		}
 		// Chop off everything after 'MO'
 		let idx = text.search(/MO/m);

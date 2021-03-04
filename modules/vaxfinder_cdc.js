@@ -52,7 +52,7 @@ async function format_data(batch) {
     let data = batch.map(provider => {
         return {
             name: provider.name,
-            cdc_id: provider.guid,
+            source_id: provider.guid,
             source_updated: provider.last_updated || null,
             source_url: "https://vaccinefinder.org/",
             source_name: "CDC Vaccine Finder",
