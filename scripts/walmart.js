@@ -180,9 +180,12 @@ class Target {
 	
 	intercept_timeslots(response) {
 		console.log("RECIEVED APPOINTMENT DATA:")
-		response.data.slotDays.map( item => {
-			console.log(item);
-			if(item.slots.length > 0) {
+		response.data.slotDays.map( day => {
+			console.log(day);
+			if(day.slots.length > 0) {
+				for(let slot of day.slots) {
+					let date = new Date(`${slot.slotId.slice(-10)} ${slot.startTime}`)
+				}
 				this.dates.push(item);
 			}
 		});

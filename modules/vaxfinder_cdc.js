@@ -124,13 +124,14 @@ async function get_providers (location, search_radius=25) {
         console.log(`ERROR: failed to get vaccine IDs from CDC \n ${err}`);
     }
     
-    // Get a list of providers for those vaccines and remove ones out-of-state
+    // Get a list of providers for those vaccines and remove ones out-of-state. also remove walmarts.
     try{
         console.log("Pinging CDC 2...");
         const url = `https://api.us.castlighthealth.com/vaccine-finder/v1/provider-locations/search?medicationGuids=${vaccine_ids_string}&lat=${search_coords.y}&long=${search_coords.x}&radius=${search_radius}`;
         providers = await fetch(url, { method: 'GET', headers: headers})
             .then(async (response) => await response.json())
-            .then(json => json.providers.filter(provider => provider.state == location.state));
+            .then(json => json.providers.filter(provider => provider.state == location.state && !provider.name.toLowerCase().includes("walmart")))
+            //~ .then(json => json.providers.filter(provider => !provider.name.toLowerCase().includes("walmart")));
 
         console.log(`SUCCESS. Retrieved ${providers.length} providers located within ${search_radius}m of origin in ${location.state}`)
 
